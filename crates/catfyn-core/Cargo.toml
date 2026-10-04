@@ -1,0 +1,8 @@
+[package]
+name = "catfyn-core"
+version = "1.0.0"
+edition = "2024"
+license = "MIT"
+description = "Catfyn's logic: Jellyfin API, screens, player control"
+
+[dependencies]
