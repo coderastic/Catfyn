@@ -11,6 +11,7 @@ pub mod mpv;
 pub mod osk;
 pub mod process;
 pub mod scan;
+pub mod upnext;
 pub mod util;
 
 pub use error::{Error, Result};
