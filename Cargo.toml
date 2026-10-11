@@ -1,3 +1,25 @@
 [workspace]
-members = ["crates/catfyn-core"]
+members = [".", "crates/catfyn-core"]
 resolver = "3"
+
+[package]
+name = "catfyn"
+version = "1.0.0"
+edition = "2024"
+license = "MIT"
+description = "A no-nonsense Jellyfin client for TV screens"
+repository = "https://github.com/coderastic/Catfyn"
+
+[[bin]]
+name = "catfyn"
+path = "src/main.rs"
+
+[dependencies]
+catfyn-core = { path = "crates/catfyn-core" }
+eframe = { version = "=0.36.2", default-features = false, features = ["default_fonts", "wgpu", "glow", "wayland", "x11"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
