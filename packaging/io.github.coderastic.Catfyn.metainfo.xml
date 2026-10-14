@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.coderastic.Catfyn</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Catfyn</name>
+  <summary>A no-nonsense Jellyfin client for TV screens</summary>
+  <description>
+    <p>
+      Catfyn plays films and series from your own Jellyfin server on a TV,
+      driven with nothing more than arrow keys, OK and Back. It finds servers
+      on your network, keeps several accounts, resumes where you stopped,
+      follows your subtitle settings and offers the next episode when the
+      credits start. Playback is done by mpv.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.coderastic.Catfyn.desktop</launchable>
+  <url type="homepage">https://github.com/coderastic/Catfyn</url>
+  <developer id="io.github.coderastic">
+    <name>coderastic</name>
+  </developer>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-10-16"/>
+  </releases>
+</component>
