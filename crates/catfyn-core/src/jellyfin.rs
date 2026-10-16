@@ -958,8 +958,7 @@ pub fn image_cache_path(cache: &Path, url: &str) -> PathBuf {
         h ^= b as u64;
         h = h.wrapping_mul(0x100000001b3);
     }
-    cache.join("images")
-        .join(format!("{h:016x}.png"))
+    cache.join("images").join(format!("{h:016x}.png"))
 }
 
 /// Download an image URL to `out` (images need no sign-in).
@@ -1210,7 +1209,6 @@ mod tests {
         assert!(header.contains("Token=\"tok\""));
         assert!(!header.contains('\\'));
     }
-
 
     #[test]
     fn header_file_survives_parallel_requests() {
