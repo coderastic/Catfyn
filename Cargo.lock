@@ -258,7 +258,7 @@ dependencies = [
 
 [[package]]
 name = "catfyn"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "catfyn-core",
  "eframe",
@@ -267,7 +267,7 @@ dependencies = [
 
 [[package]]
 name = "catfyn-core"
-version = "1.0.0"
+version = "1.0.1"
 
 [[package]]
 name = "cc"
