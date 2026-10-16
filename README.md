@@ -87,7 +87,8 @@ supported directly; a tool like AntiMicroX can map one to the keys above.
 
 **In the player**: OK shows the controls (Pause, Subtitles, Audio, …),
 OK again pauses. Left/Right skip 10 s. With the controls open, Up gets you
-to the seek bar, where holding Left/Right skips a minute at a time. Back
+to the seek bar, where holding Left/Right skips a minute at a time. When a
+series episode plays there's also a Previous episode button. Back
 hides the controls, or stops when they're hidden. Media keys on a keyboard or
 remote work as you'd expect.
 
