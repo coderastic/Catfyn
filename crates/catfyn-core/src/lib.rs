@@ -10,6 +10,7 @@ pub mod jellyfin;
 pub mod mpv;
 pub mod net;
 pub mod osk;
+pub mod plex;
 pub mod process;
 pub mod scan;
 pub mod upnext;

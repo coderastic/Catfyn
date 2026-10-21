@@ -31,9 +31,18 @@ use std::process::Child;
 use std::time::{Duration, Instant};
 use target::Target;
 
+/// A linked plex.tv account: user id, name, its token and its servers.
+type PlexLinked = (String, String, String, Vec<catfyn_core::plex::PlexServer>);
+
 enum Msg {
     Servers(Vec<Server>),
+    /// Plex servers found on this network.
+    PlexServers(Vec<Server>),
     Login(Result<jf::Account, String>),
+    /// Plex: a code for plex.tv/link.
+    PlexPin(Result<String, String>),
+    /// Plex: the code was entered (user id, name, plex.tv token, servers).
+    PlexLinked(Result<PlexLinked, String>),
     Home(String, Result<HomeData, String>),
     Library(String, Result<Vec<Item>, String>),
     Seasons(String, Result<Vec<Item>, String>),
@@ -62,6 +71,8 @@ struct App {
     wanted: RefCell<Vec<String>>,
     fetching: HashSet<String>,
     toast: Option<(String, Instant)>,
+    /// Bumped to stop waiting for a plex.tv/link code.
+    plex_wait: std::sync::Arc<std::sync::atomic::AtomicU64>,
     player: Option<Child>,
     was_focused: bool,
 }
@@ -74,6 +85,7 @@ impl App {
         let prefs = prefs::load(&config);
         theme::set_accent(&prefs.accent);
         let accounts = jf::load_accounts(&config);
+        catfyn::remember_accounts(&accounts);
         let (fin, effects) = Fin::open(&accounts);
         let mut app = App {
             fin,
@@ -90,6 +102,7 @@ impl App {
             wanted: RefCell::new(Vec::new()),
             fetching: HashSet::new(),
             toast: None,
+            plex_wait: std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0)),
             player: None,
             was_focused: true,
         };
@@ -105,6 +118,7 @@ impl App {
     }
 
     fn save_accounts(&mut self, ctx: &egui::Context) {
+        catfyn::remember_accounts(&self.accounts);
         if let Err(e) = jf::save_accounts(&self.config, &self.accounts) {
             self.toast(ctx, &format!("Could not save the accounts ({e})"));
         }
@@ -130,6 +144,68 @@ impl App {
             } => self
                 .jobs
                 .spawn(move || Msg::Login(catfyn::login(&device, &server, &user, &password))),
+            FinEffect::DiscoverPlex => self.jobs.spawn(|| {
+                Msg::PlexServers(catfyn_core::plex::discover_local(Duration::from_millis(
+                    300,
+                )))
+            }),
+            FinEffect::PlexPin => {
+                use std::sync::atomic::Ordering;
+                let generation = self.plex_wait.fetch_add(1, Ordering::SeqCst) + 1;
+                let wait = self.plex_wait.clone();
+                let (tx, rctx) = self.jobs.sender();
+                std::thread::spawn(move || {
+                    let send = |m: Msg| {
+                        let _ = tx.send(m);
+                        rctx.request_repaint();
+                    };
+                    let (pin, code) = match catfyn::plex_pin(&device) {
+                        Ok(p) => p,
+                        Err(e) => return send(Msg::PlexPin(Err(e))),
+                    };
+                    send(Msg::PlexPin(Ok(code)));
+                    // Wait for the code to be entered (Plex keeps it for
+                    // 15 minutes); leaving the screen stops this.
+                    let started = Instant::now();
+                    while wait.load(Ordering::SeqCst) == generation {
+                        std::thread::sleep(Duration::from_secs(2));
+                        if started.elapsed() > Duration::from_secs(14 * 60) {
+                            return send(Msg::PlexPin(Err(
+                                "The code expired. Press OK for a new one".into(),
+                            )));
+                        }
+                        if wait.load(Ordering::SeqCst) != generation {
+                            return;
+                        }
+                        if let Ok(Some(token)) = catfyn::plex_check(&device, pin) {
+                            let r = catfyn::plex_servers(&device, &token)
+                                .map(|(id, name, servers)| (id, name, token, servers));
+                            return send(Msg::PlexLinked(r));
+                        }
+                    }
+                });
+            }
+            FinEffect::PlexStop => {
+                self.plex_wait
+                    .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            }
+            FinEffect::PlexUse {
+                server,
+                user_id,
+                user_name,
+                cloud_token,
+            } => self.jobs.spawn(move || {
+                Msg::Login(catfyn::plex_connect(
+                    &device,
+                    &server,
+                    &user_id,
+                    &user_name,
+                    &cloud_token,
+                ))
+            }),
+            FinEffect::PlexAddress(address) => self
+                .jobs
+                .spawn(move || Msg::Login(catfyn::plex_local(&device, &address))),
             FinEffect::LoadHome => {
                 if let Some(a) = active {
                     let id = a.user_id.clone();
@@ -140,7 +216,7 @@ impl App {
             FinEffect::LoadLibrary(lib) => {
                 if let Some(a) = active {
                     self.jobs.spawn(move || {
-                        let r = catfyn::items(&device, &a, &jf::library_url(&a, &lib));
+                        let r = catfyn::library(&device, &a, &lib);
                         Msg::Library(lib, r)
                     });
                 }
@@ -148,7 +224,7 @@ impl App {
             FinEffect::LoadSeasons(series) => {
                 if let Some(a) = active {
                     self.jobs.spawn(move || {
-                        let r = catfyn::items(&device, &a, &jf::seasons_url(&a, &series));
+                        let r = catfyn::seasons(&device, &a, &series);
                         Msg::Seasons(series, r)
                     });
                 }
@@ -156,14 +232,14 @@ impl App {
             FinEffect::LoadEpisodes { series, season } => {
                 if let Some(a) = active {
                     self.jobs.spawn(move || {
-                        let r = catfyn::items(&device, &a, &jf::episodes_url(&a, &series, &season));
+                        let r = catfyn::episodes(&device, &a, &series, &season);
                         Msg::Episodes(season, r)
                     });
                 }
             }
             FinEffect::Play { item, from_start } => {
                 if let Some(a) = active {
-                    self.play(ctx, a, item, from_start);
+                    self.play(ctx, a, *item, from_start);
                 }
             }
             FinEffect::SwitchAccount(i) => {
@@ -239,6 +315,13 @@ impl App {
     fn message(&mut self, ctx: &egui::Context, msg: Msg) {
         match msg {
             Msg::Servers(v) => self.fin.on_discovered(v),
+            Msg::PlexServers(v) => self.fin.on_discovered_for(jf::Backend::Plex, v),
+            Msg::PlexPin(r) => self.fin.on_plex_pin(r),
+            Msg::PlexLinked(r) => {
+                for e in self.fin.on_plex_linked(r) {
+                    self.effect(ctx, e);
+                }
+            }
             Msg::Login(r) => {
                 let ok = match r {
                     Ok(a) => {
@@ -314,6 +397,8 @@ impl App {
                         servers: Scan::Busy,
                         ..
                     } | Screen::SignIn { busy: true, .. }
+                        | Screen::PlexLink { .. }
+                        | Screen::PlexServers { busy: true, .. }
                         | Screen::Library {
                             items: Scan::Busy,
                             ..

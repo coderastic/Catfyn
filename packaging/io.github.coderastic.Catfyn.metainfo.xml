@@ -4,14 +4,15 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>Catfyn</name>
-  <summary>A no-nonsense Jellyfin client for TV screens</summary>
+  <summary>A no-nonsense Jellyfin and Plex client for TV screens</summary>
   <description>
     <p>
-      Catfyn plays films and series from your own Jellyfin server on a TV,
-      driven with nothing more than arrow keys, OK and Back. It finds servers
-      on your network, keeps several accounts, resumes where you stopped,
-      follows your subtitle settings and offers the next episode when the
-      credits start. Playback is done by mpv.
+      Catfyn plays films and series from your own Jellyfin or Plex server on
+      a TV, driven with nothing more than arrow keys, OK and Back. It finds
+      servers on your network, signs in to Plex with a short code, keeps
+      several accounts on both kinds of server, resumes where you stopped
+      and offers the next episode when the credits start. Playback is done
+      by mpv.
     </p>
   </description>
   <launchable type="desktop-id">io.github.coderastic.Catfyn.desktop</launchable>

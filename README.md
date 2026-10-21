@@ -1,31 +1,40 @@
 # Catfyn
 
-**A no-nonsense Jellyfin client for TV interfaces.**
+**A no-nonsense Jellyfin and Plex client for TV interfaces.**
 
 I wanted to watch my own Jellyfin library on the TV without a browser tab,
 a mouse, or an app that tries to be a whole media center. Catfyn is the
 result: one full-screen window you drive from the couch with arrows, OK
-and Back. Pick something, it plays. That's it.
+and Back. Pick something, it plays. That's it. It plays from Plex servers
+too now, and if you have both, you can keep both.
 
 ## What it does
 
-- It finds your server on the network by itself, or you type the address.
-- Several accounts, on one or more servers, and you switch between them in
-  Settings. An account can be incognito, so nothing you watch on it gets
-  marked as watched.
+- Jellyfin: it finds your server on the network by itself (even one in a
+  container that doesn't answer the usual discovery), or you type the
+  address, then sign in with your user name and password.
+- Plex: choose *Sign in with Plex* and Catfyn shows a short code. Enter it
+  at plex.tv/link on your phone or computer and you're in; if your account
+  has several servers, you pick one. A Plex server on your network that
+  lets you in without signing in shows up in the list as well.
+- Several accounts, on one or more servers, Jellyfin and Plex mixed, and
+  you switch between them in Settings. With both kinds, a Jellyfin | Plex
+  switch sits next to your account button. An account can be incognito, so
+  nothing you watch on it gets marked as watched.
 - The home screen has Continue watching, Next up and the newest things in
   each library. Your libraries are tabs at the top.
 - Series work the way you'd expect: seasons, and episodes showing what you
   watched and how much is left.
 - Videos play in mpv, full screen, with controls made for a remote. OK
   shows them, OK again pauses, Left and Right skip 10 seconds. Subtitles
-  and audio tracks are a button away, and Catfyn follows the subtitle
-  settings of your Jellyfin user, external subtitle files included.
+  and audio tracks are a button away, external subtitle files included,
+  and on Jellyfin Catfyn follows your user's subtitle settings.
 - When the end credits start, a card counts down to the next episode (Play
   now or Cancel). After three episodes in a row it asks if you're still
   watching. You can turn this off or change the countdown in Settings.
 - It reports your progress to the server, so you can stop on the TV and
-  carry on anywhere else.
+  carry on anywhere else. On Plex the next episode starts where Plex's
+  credits marker says the credits begin.
 
 What it doesn't do: music, live TV, downloads, transcoding settings,
 plugins. It plays video, and tries to do that well.
@@ -39,7 +48,7 @@ Grab one of these from the [Releases](../../releases) page.
 Everything is inside, mpv included, and it works on any distribution.
 
 ```bash
-flatpak install --user Catfyn-1.0.0-x86_64.flatpak
+flatpak install --user Catfyn-<version>-x86_64.flatpak
 flatpak run io.github.coderastic.Catfyn
 ```
 
@@ -53,8 +62,8 @@ Also comes with its own mpv, and runs on distributions from about 2024 on
 Make it executable and run it:
 
 ```bash
-chmod +x Catfyn-1.0.0-x86_64.AppImage
-./Catfyn-1.0.0-x86_64.AppImage
+chmod +x Catfyn-<version>-x86_64.AppImage
+./Catfyn-<version>-x86_64.AppImage
 ```
 
 ### Tarball
@@ -63,8 +72,8 @@ The smallest option, for people who'd rather use their distribution's mpv.
 You need `mpv` and `curl` installed.
 
 ```bash
-tar xf catfyn-1.0.0-x86_64.tar.gz
-cd catfyn-1.0.0-x86_64
+tar xf catfyn-<version>-x86_64.tar.gz
+cd catfyn-<version>-x86_64
 ./install.sh                 # into ~/.local, or: sudo ./install.sh /usr/local
 ```
 
@@ -93,8 +102,8 @@ hides the controls, or stops when they're hidden. Media keys on a keyboard or
 remote work as you'd expect.
 
 **Settings** are behind your account button at the top right: accounts
-(switch, add, incognito, sign out), whether the next episode plays by
-itself, and how long the countdown is.
+(switch, add a Jellyfin or Plex server, incognito, sign out), whether the
+next episode plays by itself, and how long the countdown is.
 
 Catfyn starts full screen. `catfyn --windowed` gives you a normal window,
 which is handy on a desktop.
@@ -136,5 +145,5 @@ distribution with glibc 2.39 or newer. The rest can run anywhere:
 
 MIT, see [LICENSE](LICENSE). Catfyn includes the
 [Inter](https://rsms.me/inter/) typeface, under the SIL Open Font License
-(`assets/fonts/LICENSE-Inter.txt`). Jellyfin is a trademark of its
-respective owners; Catfyn is an independent client.
+(`assets/fonts/LICENSE-Inter.txt`). Jellyfin and Plex are trademarks of
+their respective owners; Catfyn is an independent client.

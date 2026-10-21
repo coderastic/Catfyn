@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
 Name=Catfyn
-GenericName=Jellyfin client
-Comment=Watch your Jellyfin library from the couch
+GenericName=Jellyfin and Plex client
+Comment=Watch your Jellyfin or Plex library from the couch
 Exec=catfyn
 Icon=io.github.coderastic.Catfyn
 Terminal=false
 Categories=AudioVideo;Video;Player;TV;
-Keywords=jellyfin;media;movies;series;tv;
+Keywords=jellyfin;plex;media;movies;series;tv;
 StartupWMClass=io.github.coderastic.Catfyn
