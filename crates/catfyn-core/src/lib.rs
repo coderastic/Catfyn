@@ -8,6 +8,7 @@ pub mod fin;
 pub mod input;
 pub mod jellyfin;
 pub mod mpv;
+pub mod net;
 pub mod osk;
 pub mod process;
 pub mod scan;
