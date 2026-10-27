@@ -35,8 +35,16 @@ pub struct FinPics<'a> {
 
 impl FinPics<'_> {
     pub fn get(&self, c: &C, url: &str) -> Option<TextureId> {
+        self.get_sized(c, url, 1600)
+    }
+
+    pub fn get_full(&self, c: &C, url: &str) -> Option<TextureId> {
+        self.get_sized(c, url, 3840)
+    }
+
+    fn get_sized(&self, c: &C, url: &str, max_side: u32) -> Option<TextureId> {
         match self.cache.get(url) {
-            Some(Some(path)) => self.images.get(&c.ctx, path),
+            Some(Some(path)) => self.images.get_art(&c.ctx, path, max_side),
             Some(None) => None,
             None => {
                 let mut w = self.wanted.borrow_mut();
@@ -98,7 +106,7 @@ fn focus_t(c: &C, id: impl std::hash::Hash + std::fmt::Debug, focused: bool) -> 
 fn backdrop(c: &C, pics: &FinPics, server: &str, it: Option<&Item>) {
     let dark = theme::BG_BOTTOM;
     let url = it.and_then(|i| backdrop_url(server, i));
-    let tex = url.as_deref().and_then(|u| pics.get(c, u));
+    let tex = url.as_deref().and_then(|u| pics.get_full(c, u));
     // Remember the last art that was actually drawn, to fade from it.
     let now = c.ctx.input(|i| i.time);
     let shown: (Option<String>, Option<String>, f64) = c.remember("fin-bd", |old| {
@@ -121,11 +129,11 @@ fn backdrop(c: &C, pics: &FinPics, server: &str, it: Option<&Item>) {
         .1
         .as_deref()
         .filter(|_| k < 1.0)
-        .and_then(|prev| pics.get(c, prev))
+        .and_then(|prev| pics.get_full(c, prev))
     {
         c.image(full, t, Color32::WHITE);
     }
-    if let Some(t) = shown.0.as_deref().and_then(|cur| pics.get(c, cur)) {
+    if let Some(t) = shown.0.as_deref().and_then(|cur| pics.get_full(c, cur)) {
         // A slow, barely-there drift so the picture breathes.
         let drift = ((now * 0.08).sin() * 6.0) as f32;
         c.image(

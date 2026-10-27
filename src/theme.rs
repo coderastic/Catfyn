@@ -120,8 +120,6 @@ pub fn on_accent() -> Color32 {
     }
 }
 
-/// Colour of an app tile accent (`apps.toml` `accent`).
-
 // --------------------------------------------------------------- fonts
 
 /// Font family names. Always defined by [`setup`] (falling back to the

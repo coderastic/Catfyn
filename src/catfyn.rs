@@ -288,7 +288,9 @@ pub fn fetch_image(cache: &Path, url: &str) -> Option<String> {
     if let Some(d) = path.parent() {
         let _ = std::fs::create_dir_all(d);
     }
-    let tmp = path.with_extension("part");
+    static SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let n = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let tmp = path.with_extension(format!("{}-{n}.part", std::process::id()));
     let cmd = jf::image_cmd(url, &tmp).ok().map(|mut c| {
         if let Some(h) = plex_headers_for(url) {
             c.args.insert(0, format!("@{}", h.display()));
@@ -625,6 +627,25 @@ pub fn spawn_reporter(
                         Arg::Str("catfyn_osd"),
                         Arg::Str("catfyn-subs"),
                         Arg::Str(&names.join(";")),
+                    ]);
+                }
+                if let Ok(path) = conn.command(&[Arg::Str("get_property"), Arg::Str("path")])
+                    && let Some(path) = path.as_str()
+                {
+                    let art_item = Item {
+                        server: a.server.clone(),
+                        backend: a.backend,
+                        ..item.clone()
+                    };
+                    let metadata = format!(
+                        "{{\"path\":{},\"url\":{}}}",
+                        mpv::json_string(path),
+                        mpv::json_string(&jf::wide_url(&art_item))
+                    );
+                    let _ = conn.command(&[
+                        Arg::Str("set_property"),
+                        Arg::Str("user-data/catostv/now-playing"),
+                        Arg::Str(&metadata),
                     ]);
                 }
                 send(&item, Report::Start, last.0, last.1);

@@ -10,6 +10,8 @@ too now, and if you have both, you can keep both.
 
 ## What it does
 
+- Movie and show artwork is requested at up to 4K, using the resolution
+  your server has. Pictures are cached and decoded in the background.
 - Jellyfin: it finds your server on the network by itself (even one in a
   container that doesn't answer the usual discovery), or you type the
   address, then sign in with your user name and password.
