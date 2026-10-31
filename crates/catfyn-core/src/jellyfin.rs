@@ -1297,6 +1297,7 @@ pub fn player_argv_full(
     let mut v: Vec<String> = [
         "mpv",
         "--fullscreen",
+        "--window-dragging=no",
         "--force-window=immediate",
         "--idle=no",
         "--keep-open=no",
